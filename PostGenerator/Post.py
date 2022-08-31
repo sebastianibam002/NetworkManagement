@@ -1,17 +1,29 @@
-from Constants import *
-from PIL import Image, ImageFont, ImageDraw 
+from .Constants import *
+from PIL import Image, ImageFont, ImageDraw
+from datetime import datetime
 
 class Post():
     def __init__(self):
         self.msg = ""
         self.image = ""
+        self.location_export = ""
+        self.time_stamp = datetime.now()
         # QuoteOfDay, RecipeOfDay, WordOfDay
+
+    def get_location_export(self):
+        return self.location_export
 
     def set_msg(self, text: str) -> None:
         self.msg = text
     
     def set_image(self, name_file: str) -> None:
         self.image = f"{MEDIA_LOCATION}{name_file}"
+
+    """
+    Displays the current message that is stored on the object
+    """
+    def display_information(self):
+        print(f"Created on: {self.time_stamp}\n{'*'*20}\n{self.msg}")
 
     """
     Returns the post in a tuple with (text, image)
@@ -29,7 +41,8 @@ class Post():
         image_editable = ImageDraw.Draw(my_image)
         # (x,y ) and color(R, G, B)
         image_editable.text((x,y), self.msg, (237, 230, 211), font=title_font)
-        my_image.save(f"{EXPORTS_LOCATION}{export_name}.png")
+        new_image = my_image.convert('RGB')
+        new_image.save(f"{EXPORTS_LOCATION}{export_name}.jpeg")
 
 
 if __name__ == "__main__":

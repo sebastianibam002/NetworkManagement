@@ -1,8 +1,8 @@
-from Post import Post
+from .Post import Post
 import requests
-from bs4 import BeautifulSoup
-from Constants import *
-
+from .Constants import *
+from googletrans import Translator
+import time
 
 """
 Given a string it splits the text each given amount
@@ -33,7 +33,6 @@ class WordOfTheDay(Post):
     def __init__(self) -> None:
         super().__init__()
         self.image = f"{MEDIA_LOCATION}WordOfDayTemplate.png"
-        self.export_post = ""
 
 
     """
@@ -42,19 +41,33 @@ class WordOfTheDay(Post):
     def retrieve_data_api(self):
         response = requests.get(API_WORD_GENERATOR)
         response_json = response.json()
-        soup = BeautifulSoup(response_json['body']['DefinitionMD'], features="html.parser")
-        text = soup.get_text()
-        # remove the other words
+        word = response_json[0]
+        definition_link = f"{API_WORD_DEFINITION}{word}"
+        response_definition = requests.get(definition_link)
+        response_defintion_json = response_definition.json()
+        find_definition = False
+        while not find_definition:
+            print(response_defintion_json)
+            if len(response_defintion_json) == 1:
+                # there is deifnition to that word
+                definition = response_defintion_json[0]['meanings'][0]['definitions'][0]['definition']
+                find_definition = True
+            else:
+                # there is not definition to thalwn t word
+                time.sleep(3)
+                response = requests.get(API_WORD_GENERATOR)
+                response_json = response.json()
+                word = response_json[0]
+                definition_link = f"{API_WORD_DEFINITION}{word}"
+                response_definition = requests.get(definition_link)
+                response_defintion_json = response_definition.json()
+            
 
-        similar_pos = text.find("**")
-        synonims_pos = text.find("##")
-        where_to_end = 0
-        if similar_pos == -1 or synonims_pos == -1:
-            where_to_end = max(similar_pos, synonims_pos)
-        else:
-            where_to_end = min(similar_pos, synonims_pos)
-
-        self.msg = f"{response_json['body']['Word'].capitalize()}\n\n{fix_text(text[:where_to_end - 1], 60)}"
+        # translate
+        translator = Translator()
+        word_translated = translator.translate(word, dest="es").text
+        definition_translated = translator.translate(definition, dest="es").text
+        self.msg = f"{word_translated.capitalize()}\n\n{fix_text(definition_translated, 60)}"
 
 
     """
@@ -62,7 +75,7 @@ class WordOfTheDay(Post):
     """
     def generate_post(self) -> None:
         self.get_text_inside_image_post(200, 400, 24, "WordPost")
-        self.export_post = "WordPost.png"
+        self.location_export = f"{EXPORTS_LOCATION}WordPost.jpeg"
 
 if __name__ == "__main__":
     wordDay = WordOfTheDay()

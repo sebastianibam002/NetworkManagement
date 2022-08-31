@@ -1,6 +1,6 @@
-from Post import Post
+from .Post import Post
 import requests
-from Constants import *
+from .Constants import *
 from googletrans import Translator
 
 """
@@ -51,6 +51,7 @@ class QuoteOfTheDay(Post):
     """
     def generate_post(self) -> None:
         self.get_text_inside_image_post(204, 524, 24, "QuotePost")
+        self.location_export = f"{EXPORTS_LOCATION}QuotePost.jpeg"
 
 if __name__ == "__main__":
     wordDay = QuoteOfTheDay()

@@ -1,7 +1,7 @@
-from Post import Post
+from .Post import Post
 import requests
 from bs4 import BeautifulSoup
-from Constants import *
+from .Constants import *
 from googletrans import Translator
 from PIL import Image
 """
@@ -49,8 +49,8 @@ class RecipeOfTheDay(Post):
     def __init__(self) -> None:
         super().__init__()
         self.image = f"{MEDIA_LOCATION}RecipeOfDayTemplate.png"
-        self.export_post = ""
         self.recipe_image = ""
+        
 
     """
     Retrieves the data from the API and fill the attributes
@@ -66,8 +66,8 @@ class RecipeOfTheDay(Post):
         translator = Translator()
         title_translated = translator.translate(response_json['recipes'][0]['title'], dest="es").text
         # cut the text if it is greater than a value
-        if len(text) > 921:
-            text = f"{text[:921]}.."
+        if len(text) > 1221:
+            text = f"{text[:1221]}.."
 
         result = translator.translate(text, dest='es').text
         # remove the other words
@@ -80,20 +80,25 @@ class RecipeOfTheDay(Post):
     Pastes the image of the result recipe on top of the Post
     """
     def paste_image_post(self) -> None:
-        post = Image.open(self.export_post)
+        post = Image.open(self.location_export)
         recipe_image = Image.open(self.recipe_image)
         resized_image = recipe_image.resize((415,415))
         post.paste(resized_image, (640, 374))
-        post.save(f'{EXPORTS_LOCATION}RecipePostFinal.png')
+        self.location_export = f'{EXPORTS_LOCATION}RecipePostFinal.jpeg'
+        post.save(self.location_export)
 
 
+    def generate_background(self) -> None:
+        self.get_text_inside_image_post(77, 400, 16, "RecipePostTemp")
+        self.location_export  = f"{EXPORTS_LOCATION}RecipePostTemp.jpeg"
     """
     Generate the post image
     """
 
     def generate_post(self) -> None:
-        self.get_text_inside_image_post(77, 400, 16, "RecipePostTemp")
-        self.export_post = f"{EXPORTS_LOCATION}RecipePostTemp.png"
+        self.generate_background()
+        self.paste_image_post()
+       
 
 if __name__ == "__main__":
     wordDay = RecipeOfTheDay()
